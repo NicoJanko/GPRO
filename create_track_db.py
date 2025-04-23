@@ -11,7 +11,7 @@ HEADER = {
     "Accept": "application/json"
 }
 
-DB_URL = "postgresql://neondb_owner:npg_g3ZJprqT8zwQ@ep-dawn-wind-a2rip66b-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+DB_URL = ""
 
 
 conn = psycopg2.connect(DB_URL)
