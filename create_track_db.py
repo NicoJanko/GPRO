@@ -2,7 +2,11 @@ import requests
 import psycopg2
 import time
 
-API_KEY = 'eyJ0eXAiOiJKV1QiLCAiYWxnIjoiSFMyNTYifQ.eyJpZCI6IDEwNzk2MzksImNyZWF0ZWQiOiJXZWQgQXByIDE2IDE2OjU3OjEwIFVUQyswMjAwIDIwMjUifQ.UVvMjXDI_ce7Hh6fUomJfhJ2JF16k6IywcZa2SpfiqI'
+from utils import load_credentials
+
+creds = load_credentials()
+
+API_KEY = creds['api_key']
 LANG = 'gb'
 BASE_URL = f"https://gpro.net/{LANG}/backend/api/v2/"
 
@@ -11,7 +15,7 @@ HEADER = {
     "Accept": "application/json"
 }
 
-DB_URL = ""
+DB_URL = creds['database_url']
 
 
 conn = psycopg2.connect(DB_URL)
