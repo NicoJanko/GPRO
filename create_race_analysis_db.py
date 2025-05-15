@@ -27,6 +27,7 @@ create_race_analysis_table_query = """
 CREATE TABLE IF NOT EXISTS race_analysis (
     id SERIAL PRIMARY KEY,
     race_id TEXT NOT NULL,
+    track_id INTEGER NOT NULL,
     car_pwr INTEGER NOT NULL,
     car_hdl INTEGER NOT NULL,
     car_acl INTEGER NOT NULL,
@@ -87,6 +88,7 @@ conn.commit()
 insert_race_analysis_query = """
 INSERT INTO race_analysis (
     race_id,
+    track_id,
     car_pwr,
     car_hdl,
     car_acl,
@@ -139,7 +141,7 @@ INSERT INTO race_analysis (
     avg_dry_tyre_deg_perc_per_km,
     avg_fuel_cons_L_per_km
 ) VALUES (
-    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
@@ -167,14 +169,18 @@ for race_id in races:
     else:
         race_analysis = response.json()
         race_distance_query = f"""
-    SELECT ti.race_distance_km
+    SELECT
+        ti.id,
+        ti.race_distance_km
     FROM calendar c
     JOIN tracks_info ti
         ON ti.id = c.race_{str(race_id.split(',')[1])}_id
     WHERE c.season = {race_id.split(',')[0]}
 """
         cur.execute(race_distance_query)
-        race_distance = float(cur.fetchall()[0][0])
+        results = cur.fetchall()[0]
+        track_id = int(results[0])
+        race_distance = float(results[1])
         avg_tyre, avg_float = average_consumption(race_analysis,race_distance)
         pits = race_analysis.get("pits", [])
         pit_1 = pits[0] if len(pits) > 0 else {}
@@ -187,6 +193,7 @@ for race_id in races:
 
         cur.execute(insert_race_analysis_query,(
             race_id,
+            track_id,
             race_analysis.get("carPower"),#car_pwr,
             race_analysis.get("carHandl"),#car_hdl,
             race_analysis.get("carAccel"),#car_acl,
