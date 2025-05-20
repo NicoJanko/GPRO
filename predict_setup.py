@@ -29,6 +29,7 @@ track_id = track_data['trackId']
 
 select_track_info_query = f"""
 SELECT
+    ti.track_name,
     ti.race_distance_km,
     ti.nb_laps,
     ti.laps_distance_km,
@@ -78,7 +79,8 @@ converted_dicts[0]["driver_tei"] = driver_data["techInsight"]
 converted_dicts[0]["driver_wei"] = driver_data["weight"]
 
 df = pd.DataFrame(converted_dicts)
-
+track_name = df['track_name']
+df = df.drop(['track_name'],axis=1)
 for col in df.select_dtypes(include=['object','string']).columns:
     df[col] = df[col].astype('category')
 
@@ -88,7 +90,7 @@ setups = ['fwg','rwg','eng','brk','ger','sus']
 setups_results = {}
 
 for setup in setups:
-    print(f'Predicting {setup}')
+    print(f'Predicting {setup} for {track_name}')
     model = xgb.Booster({'nthread': 4})
     model.load_model(f'{setup}_model.json')
     setups_results[setup] = model.predict(ddata, iteration_range = (0, model.best_iteration+1))

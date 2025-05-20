@@ -76,17 +76,23 @@ df = pd.DataFrame(converted_dicts)
 for col in df.select_dtypes(include=['object','string']).columns:
     df[col] = df[col].astype('category')
 
-tyre_deg = df['avg_dry_tyre_deg_perc_per_km']
-fuel_cons = df['avg_fuel_cons_l_per_km']
-learn_df = df.drop(['avg_dry_tyre_deg_perc_per_km','avg_fuel_cons_l_per_km'],axis=1)
 
-data_train, data_test, tyre_train, tyre_test, fuel_train, fuel_test = train_test_split(learn_df,tyre_deg, fuel_cons,test_size=0.25)
+tyre_learn_df = df[df['avg_dry_tyre_deg_perc_per_km']!= 0.0]
+tyre_deg = tyre_learn_df['avg_dry_tyre_deg_perc_per_km']
+tyre_learn_df = tyre_learn_df.drop(['avg_dry_tyre_deg_perc_per_km','avg_fuel_cons_l_per_km'],axis=1)
+
+fuel_cons = df['avg_fuel_cons_l_per_km']
+fuel_learn_df = df.drop(['avg_dry_tyre_deg_perc_per_km','avg_fuel_cons_l_per_km'],axis=1)
+
+tyre_data_train, tyre_data_test, tyre_train, tyre_test, = train_test_split(tyre_learn_df,tyre_deg, test_size=0.25)
+fuel_data_train, fuel_data_test, fuel_train, fuel_test = train_test_split(fuel_learn_df, fuel_cons,test_size=0.25)
+
 
 #dfull = xgb.DMatrix(learn_df)
-dtrain_tyre = xgb.DMatrix(data_train,tyre_train, enable_categorical=True)
-dtrain_fuel = xgb.DMatrix(data_train,fuel_train, enable_categorical=True)
-dtest_tyre = xgb.DMatrix(data_test,tyre_test, enable_categorical=True)
-dtest_fuel = xgb.DMatrix(data_test,fuel_test, enable_categorical=True)
+dtrain_tyre = xgb.DMatrix(tyre_data_train,tyre_train, enable_categorical=True)
+dtrain_fuel = xgb.DMatrix(fuel_data_train,fuel_train, enable_categorical=True)
+dtest_tyre = xgb.DMatrix(tyre_data_test,tyre_test, enable_categorical=True)
+dtest_fuel = xgb.DMatrix(fuel_data_test,fuel_test, enable_categorical=True)
 
 def objective(trial, dtrain, dtest, y_test,num_boost=1000):
     param = {

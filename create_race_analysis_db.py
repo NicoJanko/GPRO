@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS race_analysis (
     final_tyre_cond_perc DECIMAL,
     final_fuel_L DECIMAL,
     avg_dry_tyre_deg_perc_per_km DECIMAL NOT NULL,
+    avg_wet_tyre_deg_perc_per_km DECIMAL NOT NULL,
     avg_fuel_cons_L_per_km DECIMAL NOT NULL
 );
 """
@@ -139,6 +140,7 @@ INSERT INTO race_analysis (
     final_tyre_cond_perc,
     final_fuel_L,
     avg_dry_tyre_deg_perc_per_km,
+    avg_wet_tyre_deg_perc_per_km,
     avg_fuel_cons_L_per_km
 ) VALUES (
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
@@ -146,7 +148,7 @@ INSERT INTO race_analysis (
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-    %s, %s
+    %s, %s, %s
 );
 """
 
@@ -181,7 +183,7 @@ for race_id in races:
         results = cur.fetchall()[0]
         track_id = int(results[0])
         race_distance = float(results[1])
-        avg_tyre, avg_float = average_consumption(race_analysis,race_distance)
+        avg_tyre, avg_wet, avg_fuel = average_consumption(race_analysis,race_distance)
         pits = race_analysis.get("pits", [])
         pit_1 = pits[0] if len(pits) > 0 else {}
         pit_2 = pits[1] if len(pits) > 1 else {}
@@ -243,8 +245,9 @@ for race_id in races:
             pit_5.get("refilledTo",0),#pit_5_fuel_L,
             race_analysis.get("finishTyres"),#final_tyre_cond_per,
             race_analysis.get("finishFuel"),#final_fuel_L,
-            avg_tyre,    #avg_dry_tyre_deg_per/km,
-            avg_float    #avg_fuel_cons_L/km
+            avg_tyre,
+            avg_wet,    #avg_dry_tyre_deg_per/km,
+            avg_fuel    #avg_fuel_cons_L/km
         ))
         conn.commit()
 
